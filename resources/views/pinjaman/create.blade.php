@@ -30,16 +30,19 @@
                         <x-text-input id="tenor_bulan" type="number" name="tenor_bulan" :value="old('tenor_bulan')" min="1" max="36" required placeholder="mis. 12" />
                     </div>
 
-                    <div>
-                        <x-input-label for="jaminan" value="Unggah Jaminan" />
-                        <label for="jaminan" class="mt-1.5 flex flex-col items-center justify-center gap-2 border-2 border-dashed border-[#d7e4df] rounded-xl px-4 py-8 text-center cursor-pointer hover:border-[#163832]/40 hover:bg-[#F7F4EC] transition-colors">
-                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" class="text-[#1f4a42]/50"><path d="M12 16V4M12 4l-4 4M12 4l4 4M4 16v3a1 1 0 001 1h14a1 1 0 001-1v-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                            <span class="text-sm font-medium text-[#163832]">Klik untuk unggah dokumen jaminan</span>
-                            <span class="text-xs text-[#1f4a42]/60">PDF, JPG, atau PNG &middot; maks 5MB</span>
-                            <input id="jaminan" type="file" name="jaminan" accept=".pdf,.jpg,.jpeg,.png" required class="sr-only">
-                        </label>
-                        <x-input-error :messages="$errors->get('jaminan')" />
-                    </div>
+                   <div x-data="{ fileName: '' }">
+    <x-input-label for="jaminan" value="Unggah Jaminan" />
+    <label for="jaminan"
+           class="mt-1.5 flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-xl px-4 py-8 text-center cursor-pointer transition-colors"
+           :class="fileName ? 'border-[#163832]/40 bg-[#F7F4EC]' : 'border-[#d7e4df] hover:border-[#163832]/40 hover:bg-[#F7F4EC]'">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" class="text-[#1f4a42]/50"><path d="M12 16V4M12 4l-4 4M12 4l4 4M4 16v3a1 1 0 001 1h14a1 1 0 001-1v-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="text-sm font-medium text-[#163832]" x-text="fileName ? 'File terpilih: ' + fileName : 'Klik untuk unggah dokumen jaminan'"></span>
+        <span class="text-xs text-[#1f4a42]/60" x-show="!fileName">PDF, JPG, atau PNG &middot; maks 5MB</span>
+        <input id="jaminan" type="file" name="jaminan" accept=".pdf,.jpg,.jpeg,.png" required class="sr-only"
+               @change="fileName = $event.target.files.length ? $event.target.files[0].name : ''">
+    </label>
+    <x-input-error :messages="$errors->get('jaminan')" />
+</div>
 
                     <x-primary-button class="w-fit px-7">
                         Kirim Pengajuan

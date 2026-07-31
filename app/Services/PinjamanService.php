@@ -30,6 +30,12 @@ class PinjamanService
         return DB::transaction(function () use ($anggota, $jumlah, $tenorBulan, $jaminan) {
             $path = $jaminan->store('jaminan', 's3'); // object storage, lihat filesystems.php
 
+            // --- TAMBAHAN KODE PENANGANAN ERROR MULAI DI SINI ---
+            if ($path === false) {
+                throw new \Exception('Gagal mengunggah dokumen jaminan ke penyimpanan cloud. Silakan coba lagi.');
+            }
+            // --- TAMBAHAN KODE PENANGANAN ERROR SELESAI ---
+
             $pinjaman = Pinjaman::create([
                 'anggota_id' => $anggota->id,
                 'jumlah_pengajuan' => $jumlah,
