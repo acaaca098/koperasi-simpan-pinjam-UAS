@@ -40,6 +40,10 @@ class RegisteredUserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            // FIX: harus di-set eksplisit di sini, jangan andalkan default
+            // kolom database saja — supaya event booted() di Model User
+            // (auto-create Anggota) bisa mendeteksi role dengan benar.
+            'role' => 'anggota',
         ]);
 
         event(new Registered($user));
