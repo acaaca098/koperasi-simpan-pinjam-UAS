@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y \
     libicu-dev \
     sqlite3 \
     libsqlite3-dev \
-    && docker-php-ext-install intl zip pdo pdo_sqlite
+    && docker-php-ext-install intl zip pdo pdo_sqlite pdo_mysql
 
 # Install Node.js 20
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
