@@ -1,33 +1,46 @@
 FROM php:8.2-cli
 
-# Install dependencies
+# Install dependencies + Node.js
 RUN apt-get update && apt-get install -y \
     git \
     unzip \
     zip \
+    curl \
     libzip-dev \
     libicu-dev \
     sqlite3 \
     libsqlite3-dev \
-    && docker-php-ext-install intl zip pdo pdo_sqlite \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    && docker-php-ext-install intl zip pdo pdo_sqlite
+
+# Install Node.js 20
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y nodejs
 
 # Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /app
 
-# Copy seluruh project terlebih dahulu (termasuk artisan)
+# Copy project
 COPY . .
 
-# Install dependency
+# Install PHP dependencies
 RUN composer install \
     --no-dev \
     --optimize-autoloader \
     --no-interaction \
     --prefer-dist
 
+# Install Node dependencies & build Vite
+RUN npm install
+RUN npm run build
+
+# Laravel setup
+RUN php artisan storage:link || true
+RUN php artisan config:cache || true
+RUN php artisan route:cache || true
+RUN php artisan view:cache || true
+
 EXPOSE 8000
 
-CMD ["sh", "-c", "php artisan serve --host=0.0.0.0 --port=${PORT:-8000}"]
+CMD sh -c "php artisan migrate --force && php artisan db:seed --force && php artisan serve --host=0.0.0.0 --port=${PORT:-8000}"
