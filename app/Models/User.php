@@ -2,13 +2,16 @@
 
 namespace App\Models;
 
+use App\Models\Anggota;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Str;
 
 class User extends Authenticatable implements FilamentUser
 {
@@ -64,7 +67,7 @@ class User extends Authenticatable implements FilamentUser
     /**
      * Notifikasi in-app milik user ini (dikirim oleh NotificationService).
      */
-    public function notifikasi()
+    public function notifikasi(): HasMany
     {
         return $this->hasMany(Notifikasi::class);
     }
@@ -93,5 +96,23 @@ class User extends Authenticatable implements FilamentUser
         // Sesuai Component Diagram: Anggota memakai Web Routes biasa,
         // hanya Pengurus & Ketua yang punya akses ke Filament Panel.
         return in_array($this->role, ['pengurus', 'ketua']);
+    }
+
+    /**
+     * Auto-buat data Anggota setiap kali user baru terdaftar dengan role
+     * 'anggota' (mis. lewat form register Breeze). Tanpa ini, user bisa
+     * login tapi tidak punya data Anggota -> error "on null" di controller.
+     */
+    protected static function booted(): void
+    {
+        static::created(function (User $user) {
+            if ($user->role === 'anggota' && ! $user->anggota()->exists()) {
+                Anggota::create([
+                    'user_id' => $user->id,
+                    'nomor_anggota' => 'ANG-'.now()->format('ym').'-'.Str::padLeft((string) $user->id, 4, '0'),
+                    'status' => 'aktif',
+                ]);
+            }
+        });
     }
 }
